@@ -33,7 +33,7 @@ class ProfilerTest extends TestCase
         foreach ($loop->events as $event) {
             echo sprintf(
                 "%s %s %s\n",
-                get_class($event),
+                $event->getName(),
                 $event->getTime(),
                 $event->getStatus()
             );

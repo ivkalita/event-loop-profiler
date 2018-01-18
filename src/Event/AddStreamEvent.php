@@ -12,6 +12,7 @@ class AddStreamEvent extends Event
 
     public function __construct($stream, $listener)
     {
+        parent::__construct();
         $this->stream = $stream;
         $this->listener = $listener;
     }

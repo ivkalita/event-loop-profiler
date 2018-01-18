@@ -11,6 +11,7 @@ class FutureTickEvent extends Event
 
     public function __construct($listener)
     {
+        parent::__construct();
         $this->listener = $listener;
     }
 }

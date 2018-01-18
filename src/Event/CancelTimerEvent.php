@@ -13,6 +13,7 @@ class CancelTimerEvent extends Event
 
     public function __construct(TimerInterface $timer)
     {
+        parent::__construct();
         $this->timer = $timer;
     }
 }

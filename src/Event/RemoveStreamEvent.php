@@ -12,6 +12,7 @@ class RemoveStreamEvent extends Event
 
     public function __construct($stream)
     {
+        parent::__construct();
         $this->stream = $stream;
     }
 }

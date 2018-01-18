@@ -7,6 +7,11 @@ namespace Kaduev13\EventLoopProfiler\Event;
 
 class Event
 {
+    /**
+     * @var int
+     */
+    public static $idGenerator = 1;
+
     const STATUS_NOT_STARTED = 'NOT_STARTED';
     const STATUS_STARTED = 'STARTED';
     const STATUS_COMPLETED = 'COMPLETED';
@@ -17,6 +22,14 @@ class Event
     protected $status = Event::STATUS_NOT_STARTED;
     protected $error;
     protected $result;
+    protected $id;
+    protected $name;
+
+    public function __construct()
+    {
+        $this->id = self::$idGenerator++;
+        $this->name = sprintf('%s-%s', static::class, $this->id);
+    }
 
     public function start()
     {
@@ -90,5 +103,29 @@ class Event
     public function getResult()
     {
         return $this->result;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName(string $name)
+    {
+        $this->name = $name;
     }
 }
