@@ -65,9 +65,9 @@ class LoopProxy
         $this->events = [];
     }
 
-    public function recordCallbackFired($callable)
+    public function recordCallbackFired($callable, Event $parentEvent)
     {
-        $event = new CallbackFiredEvent($callable);
+        $event = new CallbackFiredEvent($callable, $parentEvent);
         $this->recordEvent($event, $callable);
     }
 
@@ -98,8 +98,8 @@ class LoopProxy
         for ($i = 0; $i < count($arguments); $i++) {
             if (is_callable($arguments[$i])) {
                 $callable = $arguments[$i];
-                $arguments[$i] = function () use (&$profiler, $callable) {
-                    $profiler->recordCallbackFired($callable);
+                $arguments[$i] = function () use (&$profiler, $callable, &$event) {
+                    $profiler->recordCallbackFired($callable, $event);
                 };
             }
         }
