@@ -24,6 +24,7 @@ class Event
     protected $result;
     protected $id;
     protected $name;
+    protected $parentEvent;
 
     public function __construct()
     {
@@ -127,5 +128,21 @@ class Event
     public function setName(string $name)
     {
         $this->name = $name;
+    }
+
+    /**
+     * @return Event|null
+     */
+    public function getParentEvent()
+    {
+        return $this->parentEvent;
+    }
+
+    /**
+     * @param Event|null $parentEvent
+     */
+    public function setParentEvent(Event $parentEvent = null)
+    {
+        $this->parentEvent = $parentEvent;
     }
 }

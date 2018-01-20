@@ -25,14 +25,19 @@ class ProfilerTest extends TestCase
     public function testProfile()
     {
         $loop = Profiler::profile($this->loop);
-        $loop->addTimer(0.2, function () {
+        $timer1 = $loop->addPeriodicTimer(0.2, function () use (&$loop) {
+        });
+
+        $loop->addTimer(1.0, function() use (&$loop, &$timer1) {
+            $loop->cancelTimer($timer1);
         });
 
         $loop->run();
 
         foreach ($loop->events as $event) {
             echo sprintf(
-                "%s %s %s\n",
+                "%s –> %s %s\n",
+                $event->getParentEvent() ? $event->getParentEvent()->getName() : 'Loop',
                 $event->getName(),
                 $event->getTime(),
                 $event->getStatus()

@@ -19,13 +19,11 @@ class CallbackFiredEvent extends Event
 
     /**
      * @param callable $callable
-     * @param Event $parentEvent
      */
-    public function __construct($callable, Event $parentEvent)
+    public function __construct($callable)
     {
         parent::__construct();
         $this->callable = $callable;
-        $this->parentEvent = $parentEvent;
     }
 
     /**
