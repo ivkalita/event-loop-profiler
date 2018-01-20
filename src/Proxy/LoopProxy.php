@@ -94,6 +94,7 @@ class LoopProxy
     {
         $this->events[] = $event;
         $result = null;
+        $currentEvent = $this->parentEvent;
         try {
             $event->start();
             $this->parentEvent = $event;
@@ -103,7 +104,7 @@ class LoopProxy
             $event->fail($e);
             throw $e;
         } finally {
-            $this->parentEvent = null;
+            $this->parentEvent = $currentEvent;
         }
 
         return $result;

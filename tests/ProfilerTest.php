@@ -29,6 +29,12 @@ class ProfilerTest extends TestCase
         });
 
         $loop->addTimer(1.0, function() use (&$loop, &$timer1) {
+            $loop->addTimer(0.1, function() use (&$loop, &$timer1) {
+                echo "Timer1";
+            });
+            $loop->addTimer(0.2, function() use (&$loop, &$timer1) {
+                echo "Timer2";
+            });
             $loop->cancelTimer($timer1);
         });
 
