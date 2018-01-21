@@ -2,12 +2,14 @@
 
 namespace Kaduev13\EventLoopProfiler\Event;
 
+use Symfony\Component\EventDispatcher\Event as SymfonyEvent;
+
 /**
  * Class Event
  *
  * Base entity for storing runtime loop events.
  */
-class Event
+class Event extends SymfonyEvent
 {
     /**
      * @var int

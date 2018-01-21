@@ -19,6 +19,7 @@ use Kaduev13\EventLoopProfiler\Event\RunEvent;
 use Kaduev13\EventLoopProfiler\Event\StopEvent;
 use Kaduev13\EventLoopProfiler\Event\TickEvent;
 use React\EventLoop\LoopInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * Class LoopProxy
@@ -79,6 +80,11 @@ class LoopProxy
     public $context;
 
     /**
+     * @var EventDispatcher
+     */
+    public $dispatcher;
+
+    /**
      * LoopProxy constructor.
      *
      * @param LoopInterface $realLoop
@@ -88,6 +94,7 @@ class LoopProxy
         $this->realLoop = $realLoop;
         $this->events = [];
         $this->context = null;
+        $this->dispatcher = new EventDispatcher();
     }
 
     /**
@@ -122,11 +129,16 @@ class LoopProxy
         $currentEvent = $this->context;
         try {
             $event->start();
+            $this->dispatcher->dispatch('loop_proxy.event_started', $event);
+
             $this->context = $event;
             $result = is_callable($callable) ? $callable() : call_user_func_array(...$callable);
+
             $event->complete($result);
+            $this->dispatcher->dispatch('loop_proxy.event_completed', $event);
         } catch (\Throwable $e) {
             $event->fail($e);
+            $this->dispatcher->dispatch('loop_proxy.event_failed', $event);
             throw $e;
         } finally {
             $this->context = $currentEvent;
