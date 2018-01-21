@@ -1,7 +1,4 @@
 <?php
-/**
- * @author Ivan Kalita
- */
 
 namespace Kaduev13\EventLoopProfiler\Proxy;
 

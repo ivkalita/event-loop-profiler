@@ -1,7 +1,4 @@
 <?php
-/**
- * @author Ivan Kalita
- */
 
 namespace Tests\Kaduev13\EventLoopProfiler;
 
@@ -28,11 +25,11 @@ class ProfilerTest extends TestCase
         $timer1 = $loop->addPeriodicTimer(0.2, function () use (&$loop) {
         });
 
-        $loop->addTimer(1.0, function() use (&$loop, &$timer1) {
-            $loop->addTimer(0.1, function() use (&$loop, &$timer1) {
+        $loop->addTimer(1.0, function () use (&$loop, &$timer1) {
+            $loop->addTimer(0.1, function () use (&$loop, &$timer1) {
                 echo "Timer1";
             });
-            $loop->addTimer(0.2, function() use (&$loop, &$timer1) {
+            $loop->addTimer(0.2, function () use (&$loop, &$timer1) {
                 echo "Timer2";
             });
             $loop->cancelTimer($timer1);
