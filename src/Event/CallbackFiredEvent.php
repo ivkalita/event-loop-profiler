@@ -12,7 +12,7 @@ class CallbackFiredEvent extends Event
     /**
      * @var Event
      */
-    protected $parentEvent;
+    protected $context;
 
     /**
      * @param callable $callable

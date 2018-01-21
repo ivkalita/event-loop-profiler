@@ -2,6 +2,11 @@
 
 namespace Kaduev13\EventLoopProfiler\Event;
 
+/**
+ * Class Event
+ *
+ * Base entity for storing runtime loop events.
+ */
 class Event
 {
     /**
@@ -14,14 +19,60 @@ class Event
     const STATUS_COMPLETED = 'COMPLETED';
     const STATUS_FAILED = 'FAILED';
 
+    /**
+     * When event was started.
+     *
+     * @var float
+     */
     protected $startedAt;
+
+    /**
+     * When event was ended (failed/succeeded).
+     *
+     * @var float
+     */
     protected $endedAt;
-    protected $status = Event::STATUS_NOT_STARTED;
+
+    /**
+     * If any throwable happened during event execution, it will be recorded to
+     * this member.
+     *
+     * @var \Throwable
+     */
     protected $error;
+
+    /**
+     * @var string
+     */
+    protected $status = Event::STATUS_NOT_STARTED;
+
+    /**
+     * User listener/loop method return value if any.
+     *
+     * @var mixed
+     */
     protected $result;
+
+    /**
+     * Unique event identifier.
+     *
+     * @var int
+     */
     protected $id;
+
+    /**
+     * Event name (may be non-unique through all other events).
+     *
+     * @var string
+     */
     protected $name;
-    protected $parentEvent;
+
+    /**
+     * If this event is nested, "parent" event will be recorded.
+     *
+     * @var Event|null
+     */
+    protected $context;
 
     public function __construct()
     {
@@ -130,16 +181,16 @@ class Event
     /**
      * @return Event|null
      */
-    public function getParentEvent()
+    public function getContext()
     {
-        return $this->parentEvent;
+        return $this->context;
     }
 
     /**
-     * @param Event|null $parentEvent
+     * @param Event|null $context
      */
-    public function setParentEvent(Event $parentEvent = null)
+    public function setContext(Event $context = null)
     {
-        $this->parentEvent = $parentEvent;
+        $this->context = $context;
     }
 }

@@ -27,10 +27,8 @@ class ProfilerTest extends TestCase
 
         $loop->addTimer(1.0, function () use (&$loop, &$timer1) {
             $loop->addTimer(0.1, function () use (&$loop, &$timer1) {
-                echo "Timer1";
             });
             $loop->addTimer(0.2, function () use (&$loop, &$timer1) {
-                echo "Timer2";
             });
             $loop->cancelTimer($timer1);
         });
@@ -40,7 +38,7 @@ class ProfilerTest extends TestCase
         foreach ($loop->events as $event) {
             echo sprintf(
                 "%s –> %s %s\n",
-                $event->getParentEvent() ? $event->getParentEvent()->getName() : 'Loop',
+                $event->getContext() ? $event->getContext()->getName() : 'Loop',
                 $event->getName(),
                 $event->getTime(),
                 $event->getStatus()

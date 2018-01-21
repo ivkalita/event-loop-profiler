@@ -22,7 +22,8 @@ use React\EventLoop\LoopInterface;
 
 /**
  * Class LoopProxy
- * @package Kaduev13\EventLoopProfiler\Proxy
+ *
+ * Records all the react-php loop instance activities.
  *
  * @method run()
  * @method addTimer($interval, callable $listener)
@@ -41,7 +42,7 @@ use React\EventLoop\LoopInterface;
  */
 class LoopProxy
 {
-    const PROXY_METHODS = [
+    const LOOP_METHODS_EVENTS = [
         'addReadStream' => AddReadStreamEvent::class,
         'addWriteStream' => AddWriteStreamEvent::class,
         'removeReadStream' => RemoveReadStreamEvent::class,
@@ -59,9 +60,11 @@ class LoopProxy
     ];
 
     /**
+     * Real loop instance.
+     *
      * @var LoopInterface
      */
-    private $loop;
+    private $realLoop;
 
     /**
      * @var Event[]
@@ -69,55 +72,88 @@ class LoopProxy
     public $events;
 
     /**
+     * The event that we are inside.
+     *
      * @var Event
      */
-    public $parentEvent;
+    public $context;
 
-    public function __construct(LoopInterface $loop)
+    /**
+     * LoopProxy constructor.
+     *
+     * @param LoopInterface $realLoop
+     */
+    public function __construct(LoopInterface $realLoop)
     {
-        $this->loop = $loop;
+        $this->realLoop = $realLoop;
         $this->events = [];
-        $this->parentEvent = null;
+        $this->context = null;
     }
 
-    public function recordCallbackFired($callable, Event $parentEvent)
+    /**
+     * Calls the $callable and records all the necessary events in given $context.
+     *
+     * @param $callable
+     * @param Event $context
+     *
+     * @return mixed|null
+     */
+    public function recordCallbackFired($callable, Event $context)
     {
         $event = new CallbackFiredEvent($callable);
-        $event->setParentEvent($parentEvent);
+        $event->setContext($context);
         return $this->recordEvent($event, $callable);
     }
 
+    /**
+     * Records the event.
+     *
+     * @param Event $event
+     * @param $callable
+     *
+     * @return mixed|null
+     *
+     * @throws \Throwable
+     */
     private function recordEvent(Event $event, $callable)
     {
         $this->events[] = $event;
         $result = null;
-        $currentEvent = $this->parentEvent;
+        $currentEvent = $this->context;
         try {
             $event->start();
-            $this->parentEvent = $event;
+            $this->context = $event;
             $result = is_callable($callable) ? $callable() : call_user_func_array(...$callable);
             $event->complete($result);
         } catch (\Throwable $e) {
             $event->fail($e);
             throw $e;
         } finally {
-            $this->parentEvent = $currentEvent;
+            $this->context = $currentEvent;
         }
 
         return $result;
     }
 
+    /**
+     * Main proxy method.
+     *
+     * @param $name
+     * @param $arguments
+     *
+     * @return mixed|null
+     */
     public function __call($name, $arguments)
     {
-        if (!isset(self::PROXY_METHODS[$name])) {
+        if (!isset(self::LOOP_METHODS_EVENTS[$name])) {
             throw new \BadMethodCallException($name);
         }
 
-        $className = self::PROXY_METHODS[$name];
+        $className = self::LOOP_METHODS_EVENTS[$name];
         /** @var Event $event */
         $event = new $className(...$arguments);
-        if ($this->parentEvent) {
-            $event->setParentEvent($this->parentEvent);
+        if ($this->context) {
+            $event->setContext($this->context);
         }
         $profiler = $this;
         for ($i = 0; $i < count($arguments); $i++) {
@@ -129,6 +165,6 @@ class LoopProxy
             }
         }
 
-        return $this->recordEvent($event, [[$this->loop, $name], $arguments]);
+        return $this->recordEvent($event, [[$this->realLoop, $name], $arguments]);
     }
 }
