@@ -2,9 +2,12 @@
 
 namespace Kaduev13\EventLoopProfiler;
 
-use Kaduev13\EventLoopProfiler\Event\Event;
+use Kaduev13\EventLoopProfiler\Event\TimerAddedEvent;
+use Kaduev13\EventLoopProfiler\Event\TimerCancelledEvent;
+use Kaduev13\EventLoopProfiler\Event\TimerListenerEvent;
 use Kaduev13\EventLoopProfiler\Proxy\LoopProxy;
 use React\EventLoop\LoopInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Class Profiler
@@ -27,33 +30,61 @@ class Profiler
     {
         $proxy = new LoopProxy($loop);
         if ($runtime) {
-            $stdout = fopen('php://stdout', 'w');
-            $proxy->dispatcher->addListener('loop_proxy.event_started', function (Event $event) use (&$stdout) {
-                fwrite($stdout, sprintf(
-                    "STARTED: %s –> %s %s\n",
-                    $event->getContext() ? $event->getContext()->getName() : 'Loop',
-                    $event->getName(),
-                    $event->getStartedAt()
-                ));
-            });
-            $proxy->dispatcher->addListener('loop_proxy.event_completed', function (Event $event) use (&$stdout) {
-                fwrite($stdout, sprintf(
-                    "COMPLETED: %s –> %s %s\n",
-                    $event->getContext() ? $event->getContext()->getName() : 'Loop',
-                    $event->getName(),
-                    $event->getEndedAt()
-                ));
-            });
-            $proxy->dispatcher->addListener('loop_proxy.event_failed', function (Event $event) use (&$stdout) {
-                fwrite($stdout, sprintf(
-                    "FAILED: %s –> %s %s\n",
-                    $event->getContext() ? $event->getContext()->getName() : 'Loop',
-                    $event->getName(),
-                    $event->getEndedAt()
-                ));
-            });
+            self::setupRuntimeSubscriber($proxy);
         }
 
         return $proxy;
+    }
+
+    public static function setupRuntimeSubscriber(LoopProxy $loopProxy)
+    {
+        $loopProxy->dispatcher->addSubscriber(new class implements EventSubscriberInterface {
+            public static function getSubscribedEvents()
+            {
+                return [
+                    TimerListenerEvent::getName() => 'onTimerListenerEvent',
+                    TimerAddedEvent::getName() => 'onTimerAddedEvent',
+                    TimerCancelledEvent::getName() => 'onTimerCancelledEvent',
+                ];
+            }
+
+            public function printString(string $string)
+            {
+                $stdout = fopen('php://stdout', 'w');
+                fwrite($stdout, $string);
+                fclose($stdout);
+            }
+
+            public function onTimerListenerEvent(TimerListenerEvent $timerListenerEvent)
+            {
+                $this->printString(sprintf(
+                    "%s %s %s %s\n",
+                    $timerListenerEvent->getCreatedAt(),
+                    $timerListenerEvent->getTimer()->getIdentifier(),
+                    $timerListenerEvent->getEvent()::getName(),
+                    $timerListenerEvent->getEvent()->getListener()->getIdentifier()
+                ));
+            }
+
+            public function onTimerAddedEvent(TimerAddedEvent $timerAddedEvent)
+            {
+                $this->printString(sprintf(
+                    "%s %s %s\n",
+                    $timerAddedEvent->getCreatedAt(),
+                    $timerAddedEvent::getName(),
+                    $timerAddedEvent->getTimer()->getIdentifier()
+                ));
+            }
+
+            public function onTimerCancelledEvent(TimerCancelledEvent $timerCancelledEvent)
+            {
+                $this->printString(sprintf(
+                    "%s %s %s\n",
+                    $timerCancelledEvent->getCreatedAt(),
+                    $timerCancelledEvent::getName(),
+                    $timerCancelledEvent->getTimer()->getIdentifier()
+                ));
+            }
+        });
     }
 }
