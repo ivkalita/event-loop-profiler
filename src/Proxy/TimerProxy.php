@@ -14,22 +14,22 @@ class TimerProxy extends Proxy implements TimerInterface
     /**
      * @var ListenerProxy
      */
-    public $listenerProxy;
+    private $listener;
 
     /**
      * @var TimerInterface
      */
-    public $timer;
+    private $timer;
 
     /**
      * TimerProxy constructor.
      *
      * @param TimerInterface $timer
-     * @param ListenerProxy $listenerProxy
+     * @param ListenerProxy $listener
      */
-    public function __construct(TimerInterface $timer, ListenerProxy $listenerProxy)
+    public function __construct(TimerInterface $timer, ListenerProxy $listener)
     {
-        $this->listenerProxy = $listenerProxy;
+        $this->listener = $listener;
         $this->timer = $timer;
 
         parent::__construct();
@@ -37,9 +37,19 @@ class TimerProxy extends Proxy implements TimerInterface
         $forwardEvent = function (ListenerEvent $event) {
             $this->dispatcher->dispatch($event::getName(), $event);
         };
-        $listenerProxy->dispatcher->addListener(ListenerStartedEvent::getName(), $forwardEvent);
-        $listenerProxy->dispatcher->addListener(ListenerCompletedEvent::getName(), $forwardEvent);
-        $listenerProxy->dispatcher->addListener(ListenerFailedEvent::getName(), $forwardEvent);
+        $listener->dispatcher->addListener(ListenerStartedEvent::getName(), $forwardEvent);
+        $listener->dispatcher->addListener(ListenerCompletedEvent::getName(), $forwardEvent);
+        $listener->dispatcher->addListener(ListenerFailedEvent::getName(), $forwardEvent);
+    }
+
+    public function getListener(): ListenerProxy
+    {
+        return $this->listener;
+    }
+
+    public function getTimer(): TimerInterface
+    {
+        return $this->timer;
     }
 
     protected function generateIdentifier()

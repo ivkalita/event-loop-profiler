@@ -115,7 +115,7 @@ class LoopProxy
     {
         if ($timer instanceof TimerProxy) {
             $this->dispatcher->dispatch(TimerCancelledEvent::getName(), new TimerCancelledEvent($timer));
-            $timer = $timer->timer;
+            $timer = $timer->getTimer();
         }
 
         $this->realLoop->cancelTimer($timer);
