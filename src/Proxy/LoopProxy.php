@@ -6,19 +6,21 @@ use Kaduev13\EventLoopProfiler\Event\ListenerCompletedEvent;
 use Kaduev13\EventLoopProfiler\Event\ListenerEvent;
 use Kaduev13\EventLoopProfiler\Event\ListenerFailedEvent;
 use Kaduev13\EventLoopProfiler\Event\ListenerStartedEvent;
+use Kaduev13\EventLoopProfiler\Event\LoopCreatedEvent;
+use Kaduev13\EventLoopProfiler\Event\RunEvent;
 use Kaduev13\EventLoopProfiler\Event\TimerAddedEvent;
 use Kaduev13\EventLoopProfiler\Event\TimerCancelledEvent;
 use Kaduev13\EventLoopProfiler\Event\TimerListenerEvent;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\TimerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Class LoopProxy
  *
  * Records all the react-php loop instance activities.
  *
- * @method run()
  * @method addReadStream($stream, callable $listener)
  * @method addWriteStream($stream, callable $listener)
  * @method removeReadStream($stream)
@@ -53,12 +55,17 @@ class LoopProxy
      * LoopProxy constructor.
      *
      * @param LoopInterface $realLoop
+     * @param EventSubscriberInterface[] $subscribers
      */
-    public function __construct(LoopInterface $realLoop)
+    public function __construct(LoopInterface $realLoop, array $subscribers)
     {
         $this->realLoop = $realLoop;
         $this->dispatcher = new EventDispatcher();
         $this->timers = [];
+        foreach($subscribers as $subscriber) {
+            $this->dispatcher->addSubscriber($subscriber);
+        }
+        $this->dispatcher->dispatch(LoopCreatedEvent::getName(), new LoopCreatedEvent($realLoop));
     }
 
     /**
@@ -112,5 +119,11 @@ class LoopProxy
         }
 
         $this->realLoop->cancelTimer($timer);
+    }
+
+    public function run()
+    {
+        $this->dispatcher->dispatch(RunEvent::getName(), new RunEvent());
+        $this->realLoop->run();
     }
 }
