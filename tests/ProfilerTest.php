@@ -3,6 +3,7 @@
 namespace Tests\Kaduev13\EventLoopProfiler;
 
 use Kaduev13\EventLoopProfiler\Profiler;
+use Kaduev13\EventLoopProfiler\Subscribers\RuntimePrintSubscriber;
 use PHPUnit\Framework\TestCase;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
@@ -21,7 +22,9 @@ class ProfilerTest extends TestCase
 
     public function testProfile()
     {
-        $loop = Profiler::profile($this->loop, true);
+        $loop = Profiler::profile($this->loop);
+        $loop->dispatcher->addSubscriber(new RuntimePrintSubscriber());
+
         $timer1 = $loop->addPeriodicTimer(0.2, function () use (&$loop) {
         });
 
@@ -36,15 +39,5 @@ class ProfilerTest extends TestCase
         $loop->run();
 
         $this->assertEquals(1, 1);
-
-//        foreach ($loop->events as $event) {
-//            echo sprintf(
-//                "%s –> %s %s\n",
-//                $event->getContext() ? $event->getContext()->getName() : 'Loop',
-//                $event->getName(),
-//                $event->getTime(),
-//                $event->getStatus()
-//            );
-//        }
     }
 }
