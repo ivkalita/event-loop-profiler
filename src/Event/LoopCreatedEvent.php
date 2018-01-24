@@ -3,7 +3,6 @@
 
 namespace Kaduev13\EventLoopProfiler\Event;
 
-
 use React\EventLoop\LoopInterface;
 
 class LoopCreatedEvent extends Event

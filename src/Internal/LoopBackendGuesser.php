@@ -3,7 +3,6 @@
 
 namespace Kaduev13\EventLoopProfiler\Internal;
 
-
 use React\EventLoop\ExtEventLoop;
 use React\EventLoop\LibEventLoop;
 use React\EventLoop\LoopInterface;

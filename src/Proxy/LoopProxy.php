@@ -62,7 +62,7 @@ class LoopProxy
         $this->realLoop = $realLoop;
         $this->dispatcher = new EventDispatcher();
         $this->timers = [];
-        foreach($subscribers as $subscriber) {
+        foreach ($subscribers as $subscriber) {
             $this->dispatcher->addSubscriber($subscriber);
         }
         $this->dispatcher->dispatch(LoopCreatedEvent::getName(), new LoopCreatedEvent($realLoop));
